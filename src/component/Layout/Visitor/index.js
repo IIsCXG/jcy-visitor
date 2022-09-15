@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Card, Space, Table, Tag, Breadcrumb, Pagination, Button, Input, Modal, message } from 'antd'
+import { Card, Space, Table, Tag, Breadcrumb, Pagination, Button, Input, Modal, message, Image, DatePicker } from 'antd'
 import { NavLink } from 'react-router-dom';
 import './index.less'
 import https from '../../../request';
-//导入能获取最新数据的useState
-import { useCallbackState } from '../../../utils/newUseState';
+// 把日期选择框改为中文
+import 'moment/locale/zh-cn';
 
 
-// const [data, setData] = useCallbackState({});
-
-// setData({}, function (data) {
-//     console.log("啦啦啦，我是回调方法", data);
-// })
 
 // 表格
 const columns = [
@@ -21,31 +16,30 @@ const columns = [
         render: (text) => <a>{text}</a>,
     },
     {
-        title: '年龄',
+        title: '位置',
         dataIndex: 'location',
+    },
+    {
+        title: '图片',
+        dataIndex: 'picture',
+        render: picture => (
+            <Image src={picture} style={{ maxWidth: 60, maxHeight: 40 }} alt="加载中" />
+        ),
     },
     {
         title: '时间',
         dataIndex: 'shootTime',
     },
 
+
     {
         title: '状态',
         dataIndex: 'state',
-        render: (_, { state }) => (
+        render: (state) => (
             <>
-                {state.map((tag) => {
-                    let color = tag.length > 5 ? 'gold' : 'green';
-                    if (tag === 'loser') {
-                        color = 'volcano';
-                    }
-
-                    return (
-                        <Tag color={color} key={tag}>
-                            {tag.toUpperCase()}
-                        </Tag>
-                    );
-                })}
+                <Tag color={state === 1 ? 'green' : 'volcano'}  >
+                    {state === 1 ? '已处理' : '未处理'}
+                </Tag>
             </>
         ),
     },
@@ -53,7 +47,7 @@ const columns = [
         title: '操作',
         key: 'action',
         render: () => (
-            <Space Space size="middle" >
+            <Space size="middle" >
 
                 <Button type="primary">修改</Button>
 
@@ -63,37 +57,12 @@ const columns = [
         ),
     },
 ];
-const data = [
-    {
-        key: '1',
-        name: 'John Brown',
-        age: 32,
-        address: 'New York No. 1 Lake Park',
-        state: ['nice'],
-    },
-    {
-        key: '2',
-        name: 'Jim Green',
-        age: 42,
-        address: 'London No. 1 Lake Park',
-        state: ['loser'],
-    },
-    {
-        key: '3',
-        name: 'Joe Black',
-        age: 32,
-        address: 'Sidney No. 1 Lake Park',
-        state: ['teacher'],
-    },
 
-];
 export default function Visitor() {
     const [pageNum, setPageNuber] = useState(1)//第几页
-    const [pageSize, setPageSize] = useState(3)//每页显示多少条
-
-
+    const [pageSize, setPageSize] = useState(5)//每页显示多少条
     const [visitorData, setvisitorData] = useState([])//初次渲染页面的状态
-
+    const [isModalOpen, setIsModalOpen] = useState(false)// 添加对话框初始值
 
     // 改变页码的函数
     async function changePage(pageNum, pageSize) {
@@ -101,6 +70,8 @@ export default function Visitor() {
         setPageNuber(pageNum)
         setPageSize(pageSize)
         const res = await https.post('/list', { pageNum, pageSize })
+        setvisitorData(res.data)
+
         console.log(res);
     }
 
@@ -108,30 +79,39 @@ export default function Visitor() {
     async function getData() {
         const res = await https.post('/list', { pageNum, pageSize })
         if (res.code !== 200) return message.error("请求失败")
-        setvisitorData(res.data)
-        console.log(res.data);
+        setvisitorData(res.data)//列表数据
+        sessionStorage.setItem('total', res.count)//总条数,因为会导致页面刷新状态存不住，所以用这个
+        console.log(res);
 
     }
+
     useEffect(() => {
+
         getData()
-        console.log(visitorData);
-    }, [visitorData])
+    }, [])
     const { Search } = Input;
 
     // 搜索框的回调
     const onSearch = (value) => console.log(value);
 
+    // 日期选择框回调
+    const VisitorTime = (date, dateString) => {
+        console.log(date, dateString);
+    };
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // // 添加对话框回调
 
     const showModal = () => {
         console.log(1);
         setIsModalOpen(true);
     };
+    // // 添加对话框确认按钮回调
 
     const handleOk = () => {
         setIsModalOpen(false);
     };
+    // // 添加对话框取消按钮回调
 
     const handleCancel = () => {
         setIsModalOpen(false);
@@ -152,14 +132,18 @@ export default function Visitor() {
                     style={{
                         width: '90%',
                         margin: '0 auto',
-                        height: '72vh',
+                        height: '76vh',
                     }}
                 >
 
                     {/* 搜索框 */}
                     <Search placeholder="请输入用户名" onSearch={onSearch} enterButton style={{ width: 240, marginBottom: 20 }} />
+                    {/* 日期选择框 */}
+                    <Space direction="vertical" style={{ marginLeft: 40 }}>
+                        <DatePicker onChange={VisitorTime} />
+                    </Space>
                     {/* 添加按钮 */}
-                    <Button type="primary" style={{ marginLeft: 40 }} onClick={showModal}>添加</Button>
+                    <Button type="primary" style={{ float: 'right' }} onClick={showModal}>添加</Button>
                     {/* 添加对话框 */}
                     <Modal
                         title="请添加"
@@ -174,10 +158,10 @@ export default function Visitor() {
                         <p>Some contents...</p>
                     </Modal>
 
-
-                    <Table columns={columns} dataSource={visitorData} pagination={false} />
+                    <Table rowKey="key" columns={columns} dataSource={visitorData} pagination={false} />
                     <Pagination
-                        total={85}
+                        total={sessionStorage.getItem("total")}
+                        defaultPageSize='5'//默认页码
                         showSizeChanger
                         showQuickJumper
                         onChange={changePage}

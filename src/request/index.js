@@ -41,7 +41,7 @@ https.interceptors.request.use(config => {
 // 响应拦截器
 https.interceptors.response.use(response => {
     //根据返回不同的状态码做不同的事情
-    console.log(response.data);
+    // console.log(response);
     if (response.data) {
         switch (response.data.code) {
             case 200:

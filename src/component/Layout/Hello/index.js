@@ -19,7 +19,7 @@ export default function Hello() {
                     style={{
                         width: '90%',
                         margin: '0 auto',
-                        height: '75vh',
+                        height: '76vh',
                     }}
                 >
                     <p>hello</p>

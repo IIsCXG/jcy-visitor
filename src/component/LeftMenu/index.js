@@ -29,13 +29,13 @@ const items = [
     getItem('首页', 'home', <BankOutlined />),
     getItem('欢迎页', 'hello', <BankOutlined />),
     getItem('访客管理', 'visitor', <UsergroupAddOutlined />),
-    getItem('Navigation One', 'sub1', <MailOutlined />, [
+    getItem(' 充数一号', 'sub1', <MailOutlined />, [
         getItem('Option 5', 'm'),
         getItem('Option 6', '6'),
         getItem('Option 7', '7'),
         getItem('Option 8', '8'),
     ]),
-    getItem('Navigation Two', 'sub2', <AppstoreOutlined />, [
+    getItem('充数二号', 'sub2', <AppstoreOutlined />, [
         getItem('Option 9', '9'),
         getItem('Option 10', '10'),
         getItem('Submenu', 'sub3', null, [getItem('Option 11', '11'), getItem('Option 12', '12')]),
